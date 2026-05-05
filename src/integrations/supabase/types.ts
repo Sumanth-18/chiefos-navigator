@@ -14,7 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          current_load: number
+          delivery_score: number
+          department: string
+          email: string | null
+          id: string
+          leaves_booked: number
+          name: string
+          on_time_count: number
+          phone: string | null
+          role: string
+          skills: string[] | null
+          total_projects: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          current_load?: number
+          delivery_score?: number
+          department?: string
+          email?: string | null
+          id?: string
+          leaves_booked?: number
+          name: string
+          on_time_count?: number
+          phone?: string | null
+          role?: string
+          skills?: string[] | null
+          total_projects?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          current_load?: number
+          delivery_score?: number
+          department?: string
+          email?: string | null
+          id?: string
+          leaves_booked?: number
+          name?: string
+          on_time_count?: number
+          phone?: string | null
+          role?: string
+          skills?: string[] | null
+          total_projects?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      project_members: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          match_score: number | null
+          project_id: string
+          role: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          match_score?: number | null
+          project_id: string
+          role?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          match_score?: number | null
+          project_id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          brief: string | null
+          budget: number | null
+          client_name: string | null
+          created_at: string
+          deadline: string | null
+          id: string
+          name: string
+          priority: string
+          required_skills: string[] | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief?: string | null
+          budget?: number | null
+          client_name?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          name: string
+          priority?: string
+          required_skills?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief?: string | null
+          budget?: number | null
+          client_name?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          name?: string
+          priority?: string
+          required_skills?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assignee_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          project_id: string | null
+          status: string
+          story_points: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string | null
+          status?: string
+          story_points?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignee_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          project_id?: string | null
+          status?: string
+          story_points?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
