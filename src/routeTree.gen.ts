@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppProjectsRouteImport } from './routes/_app.projects'
+import { Route as AppHeatmapRouteImport } from './routes/_app.heatmap'
+import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppProjectsNewRouteImport } from './routes/_app.projects.new'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -29,9 +33,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTasksRoute = AppTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProjectsRoute = AppProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHeatmapRoute = AppHeatmapRouteImport.update({
+  id: '/heatmap',
+  path: '/heatmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmployeesRoute = AppEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -39,18 +58,31 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppProjectsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
-  '/projects': typeof AppProjectsRoute
+  '/employees': typeof AppEmployeesRoute
+  '/heatmap': typeof AppHeatmapRoute
+  '/projects': typeof AppProjectsRouteWithChildren
+  '/tasks': typeof AppTasksRoute
+  '/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
-  '/projects': typeof AppProjectsRoute
+  '/employees': typeof AppEmployeesRoute
+  '/heatmap': typeof AppHeatmapRoute
+  '/projects': typeof AppProjectsRouteWithChildren
+  '/tasks': typeof AppTasksRoute
+  '/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,20 +90,44 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/projects': typeof AppProjectsRoute
+  '/_app/employees': typeof AppEmployeesRoute
+  '/_app/heatmap': typeof AppHeatmapRoute
+  '/_app/projects': typeof AppProjectsRouteWithChildren
+  '/_app/tasks': typeof AppTasksRoute
+  '/_app/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard' | '/projects'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/employees'
+    | '/heatmap'
+    | '/projects'
+    | '/tasks'
+    | '/projects/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/projects'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/employees'
+    | '/heatmap'
+    | '/projects'
+    | '/tasks'
+    | '/projects/new'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/login'
     | '/_app/dashboard'
+    | '/_app/employees'
+    | '/_app/heatmap'
     | '/_app/projects'
+    | '/_app/tasks'
+    | '/_app/projects/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -103,11 +159,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/tasks': {
+      id: '/_app/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/projects': {
       id: '/_app/projects'
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof AppProjectsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/heatmap': {
+      id: '/_app/heatmap'
+      path: '/heatmap'
+      fullPath: '/heatmap'
+      preLoaderRoute: typeof AppHeatmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/employees': {
+      id: '/_app/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof AppEmployeesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -117,17 +194,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/projects/new': {
+      id: '/_app/projects/new'
+      path: '/new'
+      fullPath: '/projects/new'
+      preLoaderRoute: typeof AppProjectsNewRouteImport
+      parentRoute: typeof AppProjectsRoute
+    }
   }
 }
 
+interface AppProjectsRouteChildren {
+  AppProjectsNewRoute: typeof AppProjectsNewRoute
+}
+
+const AppProjectsRouteChildren: AppProjectsRouteChildren = {
+  AppProjectsNewRoute: AppProjectsNewRoute,
+}
+
+const AppProjectsRouteWithChildren = AppProjectsRoute._addFileChildren(
+  AppProjectsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
-  AppProjectsRoute: typeof AppProjectsRoute
+  AppEmployeesRoute: typeof AppEmployeesRoute
+  AppHeatmapRoute: typeof AppHeatmapRoute
+  AppProjectsRoute: typeof AppProjectsRouteWithChildren
+  AppTasksRoute: typeof AppTasksRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
-  AppProjectsRoute: AppProjectsRoute,
+  AppEmployeesRoute: AppEmployeesRoute,
+  AppHeatmapRoute: AppHeatmapRoute,
+  AppProjectsRoute: AppProjectsRouteWithChildren,
+  AppTasksRoute: AppTasksRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -140,3 +242,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
