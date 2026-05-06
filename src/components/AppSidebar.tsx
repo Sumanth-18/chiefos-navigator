@@ -5,6 +5,7 @@ import {
   Users,
   CheckSquare,
   BarChart3,
+  CalendarOff,
   LogOut,
   Zap,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const navItems = [
   { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/employees', label: 'Employees', icon: Users },
   { to: '/tasks', label: 'Tasks', icon: CheckSquare },
+  { to: '/leaves', label: 'Leaves', icon: CalendarOff },
   { to: '/heatmap', label: 'Heatmap', icon: BarChart3 },
 ] as const;
 
