@@ -101,6 +101,53 @@ export type Database = {
         }
         Relationships: []
       }
+      leaves: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          leave_type: string
+          reason: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date: string
+          id?: string
+          leave_type?: string
+          reason?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          leave_type?: string
+          reason?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaves_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_members: {
         Row: {
           created_at: string
@@ -192,8 +239,10 @@ export type Database = {
         Row: {
           assignee_id: string | null
           created_at: string
+          dependency_ids: string[] | null
           description: string | null
           due_date: string | null
+          estimated_hours: number | null
           id: string
           priority: string
           project_id: string | null
@@ -206,8 +255,10 @@ export type Database = {
         Insert: {
           assignee_id?: string | null
           created_at?: string
+          dependency_ids?: string[] | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
           priority?: string
           project_id?: string | null
@@ -220,8 +271,10 @@ export type Database = {
         Update: {
           assignee_id?: string | null
           created_at?: string
+          dependency_ids?: string[] | null
           description?: string | null
           due_date?: string | null
+          estimated_hours?: number | null
           id?: string
           priority?: string
           project_id?: string | null
@@ -253,7 +306,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_employee_load: { Args: { emp_id: string }; Returns: number }
+      calculate_project_health: { Args: { proj_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
