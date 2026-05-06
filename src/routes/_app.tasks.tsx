@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,7 @@ function TasksPage() {
   const [form, setForm] = useState({
     title: "", description: "", priority: "medium" as const,
     project_id: "", assignee_id: "", due_date: "", story_points: "1",
+    estimated_hours: "8",
   });
 
   useEffect(() => {
@@ -67,25 +68,51 @@ function TasksPage() {
   const createTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { error } = await supabase.from("tasks").insert({
+    const { error, data } = await supabase.from("tasks").insert({
       title: form.title, description: form.description || null,
       priority: form.priority, project_id: form.project_id || null,
       assignee_id: form.assignee_id || null, due_date: form.due_date || null,
-      story_points: parseInt(form.story_points) || 1, user_id: user.id,
+      story_points: parseInt(form.story_points) || 1,
+      estimated_hours: parseFloat(form.estimated_hours) || 8,
+      user_id: user.id,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
+
+    // Audit log
+    await supabase.from("audit_log").insert({
+      action: "task_created", entity_type: "task", entity_id: data.id,
+      details: { title: form.title, assignee_id: form.assignee_id || null },
+      user_id: user.id,
     });
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Task created!");
-      setForm({ title: "", description: "", priority: "medium", project_id: "", assignee_id: "", due_date: "", story_points: "1" });
-      setShowCreate(false);
-      fetchData();
+
+    if (form.assignee_id) {
+      await supabase.from("audit_log").insert({
+        action: "task_assigned", entity_type: "task", entity_id: data.id,
+        details: { assignee_id: form.assignee_id, title: form.title },
+        user_id: user.id,
+      });
     }
+
+    toast.success("Task created!");
+    setForm({ title: "", description: "", priority: "medium", project_id: "", assignee_id: "", due_date: "", story_points: "1", estimated_hours: "8" });
+    setShowCreate(false);
+    fetchData();
   };
 
-  const updateTaskStatus = async (taskId: string, status: string) => {
-    const { error } = await supabase.from("tasks").update({ status }).eq("id", taskId);
-    if (error) toast.error(error.message);
-    else fetchData();
+  const updateTaskStatus = async (taskId: string, newStatus: string) => {
+    if (!user) return;
+    const task = tasks.find((t) => t.id === taskId);
+    const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", taskId);
+    if (error) { toast.error(error.message); return; }
+
+    await supabase.from("audit_log").insert({
+      action: newStatus === "done" ? "task_completed" : "task_status_changed",
+      entity_type: "task", entity_id: taskId,
+      details: { from: task?.status, to: newStatus, title: task?.title },
+      user_id: user.id,
+    });
+
+    fetchData();
   };
 
   const deleteTask = async (id: string) => {
@@ -111,11 +138,9 @@ function TasksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="mt-1 text-muted-foreground">{tasks.length} tasks total</p>
+          <p className="mt-1 text-muted-foreground">{tasks.length} tasks — hours tracked for load calculation</p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />New Task
-        </Button>
+        <Button onClick={() => setShowCreate(true)}><Plus className="mr-2 h-4 w-4" />New Task</Button>
       </div>
 
       <div className="flex gap-3">
@@ -132,7 +157,6 @@ function TasksPage() {
         </Select>
       </div>
 
-      {/* Kanban-style columns */}
       <div className="grid gap-4 lg:grid-cols-4">
         {statuses.map((status) => {
           const statusTasks = filtered.filter((t) => t.status === status);
@@ -146,9 +170,10 @@ function TasksPage() {
                 {statusTasks.map((task, i) => {
                   const assignee = employees.find((e) => e.id === task.assignee_id);
                   const project = projects.find((p) => p.id === task.project_id);
+                  const isOverdue = task.due_date && task.status !== "done" && new Date(task.due_date) < new Date();
                   return (
                     <motion.div key={task.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                      <Card className="glass-card">
+                      <Card className={`glass-card ${isOverdue ? "border-destructive/40" : ""}`}>
                         <CardContent className="space-y-2 p-3">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-sm font-medium">{task.title}</p>
@@ -164,24 +189,21 @@ function TasksPage() {
                                 <span className="text-[10px] text-muted-foreground">{assignee.name}</span>
                               </div>
                             )}
-                            {task.story_points && (
-                              <Badge variant="outline" className="text-[10px]">{task.story_points} SP</Badge>
-                            )}
+                            <div className="flex gap-1">
+                              {task.story_points && <Badge variant="outline" className="text-[10px]">{task.story_points} SP</Badge>}
+                              <Badge variant="outline" className="text-[10px]">{task.estimated_hours || 8}h</Badge>
+                            </div>
                           </div>
-                          <div className="flex gap-1">
+                          {isOverdue && <p className="text-[10px] text-destructive">Overdue: {new Date(task.due_date!).toLocaleDateString()}</p>}
+                          <div className="flex gap-1 flex-wrap">
                             {statuses.filter((s) => s !== task.status).map((s) => (
-                              <button
-                                key={s}
-                                onClick={() => updateTaskStatus(task.id, s)}
-                                className="rounded bg-secondary px-1.5 py-0.5 text-[9px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                              >
+                              <button key={s} onClick={() => updateTaskStatus(task.id, s)}
+                                className="rounded bg-secondary px-1.5 py-0.5 text-[9px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
                                 → {statusLabels[s]}
                               </button>
                             ))}
-                            <button
-                              onClick={() => deleteTask(task.id)}
-                              className="ml-auto rounded px-1 py-0.5 text-[9px] text-destructive/60 hover:text-destructive"
-                            >
+                            <button onClick={() => deleteTask(task.id)}
+                              className="ml-auto rounded px-1 py-0.5 text-[9px] text-destructive/60 hover:text-destructive">
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
@@ -196,17 +218,13 @@ function TasksPage() {
         })}
       </div>
 
-      {/* Create */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="dark max-w-lg border-border bg-card">
-          <DialogHeader>
-            <DialogTitle>Create Task</DialogTitle>
-            <DialogDescription>Add a new task</DialogDescription>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Create Task</DialogTitle><DialogDescription>Add a new task</DialogDescription></DialogHeader>
           <form onSubmit={createTask} className="space-y-4">
             <div className="space-y-2"><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required /></div>
             <div className="space-y-2"><Label>Description</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Select value={form.priority} onValueChange={(v: any) => setForm({ ...form, priority: v })}>
@@ -220,24 +238,21 @@ function TasksPage() {
                 </Select>
               </div>
               <div className="space-y-2"><Label>Story Points</Label><Input type="number" min="1" value={form.story_points} onChange={(e) => setForm({ ...form, story_points: e.target.value })} /></div>
+              <div className="space-y-2"><Label>Est. Hours</Label><Input type="number" min="1" value={form.estimated_hours} onChange={(e) => setForm({ ...form, estimated_hours: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Project</Label>
                 <Select value={form.project_id} onValueChange={(v) => setForm({ ...form, project_id: v })}>
                   <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Assignee</Label>
                 <Select value={form.assignee_id} onValueChange={(v) => setForm({ ...form, assignee_id: v })}>
                   <SelectTrigger><SelectValue placeholder="Select assignee" /></SelectTrigger>
-                  <SelectContent>
-                    {employees.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
-                  </SelectContent>
+                  <SelectContent>{employees.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
