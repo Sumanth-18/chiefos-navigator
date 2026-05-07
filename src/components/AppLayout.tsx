@@ -13,13 +13,17 @@ export function AppLayout() {
   useEffect(() => {
     if (!user || seeded.current) return;
     seeded.current = true;
-    seedDemoData().then((res) => {
-      if (res.seeded) {
-        toast.success('Demo data loaded');
-      }
-    }).catch((err) => {
-      console.error('Seed error:', err);
-    });
+
+    if (typeof window !== 'undefined' && !sessionStorage.getItem('demo_seeded')) {
+      seedDemoData().then((res) => {
+        if (res.seeded) {
+          toast.success('Demo data loaded');
+        }
+        sessionStorage.setItem('demo_seeded', '1');
+      }).catch((err) => {
+        console.error('Seed error:', err);
+      });
+    }
   }, [user]);
 
   return (

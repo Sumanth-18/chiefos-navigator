@@ -7,9 +7,12 @@ import {
   BarChart3,
   CalendarOff,
   LogOut,
+  RefreshCw,
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { seedDemoData } from '@/server/seed.functions';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
@@ -73,6 +76,19 @@ export function AppSidebar() {
         >
           <LogOut className="h-4 w-4" />
           Sign Out
+        </button>
+        <button
+          onClick={() => {
+            sessionStorage.removeItem('demo_seeded');
+            seedDemoData().then(() => {
+              toast.success('Demo data reset');
+              window.location.reload();
+            }).catch(() => toast.error('Reset failed'));
+          }}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Reset Demo
         </button>
       </div>
     </aside>

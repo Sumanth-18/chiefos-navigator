@@ -6,16 +6,6 @@ export const seedDemoData = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    // Check employee count
-    const { count } = await supabase
-      .from("employees")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-
-    if ((count ?? 0) >= 5) {
-      return { seeded: false };
-    }
-
     // Delete all existing data for this user (order matters for FK)
     await supabase.from("audit_log").delete().eq("user_id", userId);
     await supabase.from("tasks").delete().eq("user_id", userId);
