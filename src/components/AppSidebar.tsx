@@ -7,9 +7,12 @@ import {
   BarChart3,
   CalendarOff,
   LogOut,
+  RefreshCw,
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { seedDemoData } from '@/server/seed.functions';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
