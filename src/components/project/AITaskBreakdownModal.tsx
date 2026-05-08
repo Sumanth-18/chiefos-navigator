@@ -95,14 +95,14 @@ export function AITaskBreakdownModal({
         const pdfjsLib = await import("pdfjs-dist");
         pdfjsLib.GlobalWorkerOptions.workerSrc = "";
         const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buffer, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: buffer } as any).promise;
         let fullText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
           const strings = content.items
-            .filter((item): item is { str: string } => "str" in item)
-            .map(item => item.str);
+            .filter((item: any) => "str" in item)
+            .map((item: any) => item.str as string);
           fullText += strings.join(" ") + "\n";
         }
         setExtractedText(fullText);

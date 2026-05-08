@@ -83,9 +83,9 @@ export function TaskDetailPanel({ task, employees, allTasks, leaves, onClose, on
       due_date: form.due_date || null,
       story_points: parseInt(form.story_points) || 1,
       estimated_hours: parseFloat(form.estimated_hours) || 8,
-      priority: form.priority as Task["priority"],
-      status: form.status as Task["status"],
-    });
+      priority: form.priority,
+      status: form.status,
+    } as Partial<Task>);
   };
 
   return (
