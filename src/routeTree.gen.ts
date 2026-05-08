@@ -19,6 +19,7 @@ import { Route as AppHeatmapRouteImport } from './routes/_app.heatmap'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppProjectsNewRouteImport } from './routes/_app.projects.new'
+import { Route as AppProjectsProjectIdRouteImport } from './routes/_app.projects.$projectId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -69,6 +70,11 @@ const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AppProjectsRoute,
 } as any)
+const AppProjectsProjectIdRoute = AppProjectsProjectIdRouteImport.update({
+  id: '/$projectId',
+  path: '/$projectId',
+  getParentRoute: () => AppProjectsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/leaves': typeof AppLeavesRoute
   '/projects': typeof AppProjectsRouteWithChildren
   '/tasks': typeof AppTasksRoute
+  '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/leaves': typeof AppLeavesRoute
   '/projects': typeof AppProjectsRouteWithChildren
   '/tasks': typeof AppTasksRoute
+  '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_app/leaves': typeof AppLeavesRoute
   '/_app/projects': typeof AppProjectsRouteWithChildren
   '/_app/tasks': typeof AppTasksRoute
+  '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/_app/projects/new': typeof AppProjectsNewRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/projects'
     | '/tasks'
+    | '/projects/$projectId'
     | '/projects/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/projects'
     | '/tasks'
+    | '/projects/$projectId'
     | '/projects/new'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_app/leaves'
     | '/_app/projects'
     | '/_app/tasks'
+    | '/_app/projects/$projectId'
     | '/_app/projects/new'
   fileRoutesById: FileRoutesById
 }
@@ -220,14 +232,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProjectsNewRouteImport
       parentRoute: typeof AppProjectsRoute
     }
+    '/_app/projects/$projectId': {
+      id: '/_app/projects/$projectId'
+      path: '/$projectId'
+      fullPath: '/projects/$projectId'
+      preLoaderRoute: typeof AppProjectsProjectIdRouteImport
+      parentRoute: typeof AppProjectsRoute
+    }
   }
 }
 
 interface AppProjectsRouteChildren {
+  AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
   AppProjectsNewRoute: typeof AppProjectsNewRoute
 }
 
 const AppProjectsRouteChildren: AppProjectsRouteChildren = {
+  AppProjectsProjectIdRoute: AppProjectsProjectIdRoute,
   AppProjectsNewRoute: AppProjectsNewRoute,
 }
 
