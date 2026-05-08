@@ -149,7 +149,7 @@ function ProjectsPage() {
             const teamSize = members.filter((m) => m.project_id === project.id).length;
             return (
               <motion.div key={project.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="glass-card cursor-pointer transition-all hover:border-primary/30 hover:glow-primary" onClick={() => setSelectedProject(project)}>
+                <Card className="glass-card cursor-pointer transition-all hover:border-primary/30 hover:glow-primary" onClick={() => navigate({ to: "/projects/$projectId", params: { projectId: project.id } })}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
