@@ -153,7 +153,7 @@ export function TaskDetailPanel({ task, employees, allTasks, leaves, onClose, on
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label>Priority</Label>
-            <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
+            <Select value={form.priority} onValueChange={(v: string) => setForm({ ...form, priority: v as Task["priority"] })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="low">Low</SelectItem>
@@ -165,7 +165,7 @@ export function TaskDetailPanel({ task, employees, allTasks, leaves, onClose, on
           </div>
           <div className="space-y-1">
             <Label>Status</Label>
-            <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+            <Select value={form.status} onValueChange={(v: string) => setForm({ ...form, status: v as Task["status"] })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="todo">To Do</SelectItem>
