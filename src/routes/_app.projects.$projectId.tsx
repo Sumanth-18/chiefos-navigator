@@ -80,18 +80,29 @@ function ProjectDetailPage() {
   const handleTaskStatusChange = useCallback(async (taskId: string, newStatus: Task["status"], oldStatus: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task || !user) return;
-    const assignee = employees.find(e => e.id === task.assignee_id);
+
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+    setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
+    const labels: Record<string, string> = { todo: "To Do", in_progress: "In Progress", in_review: "In Review", done: "Done" };
+    toast.success(`Task moved to ${labels[newStatus]}`);
+
     const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", taskId);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error("Failed to update task");
+      // Revert
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: oldStatus as Task["status"] } : t));
+      setAllTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: oldStatus as Task["status"] } : t));
+      return;
+    }
+    const assignee = employees.find(e => e.id === task.assignee_id);
     await supabase.from("audit_log").insert({
-      action: "task_moved", entity_type: "task", entity_id: taskId,
+      action: "task_status_changed", entity_type: "task", entity_id: taskId,
       details: { title: task.title, from: oldStatus, to: newStatus, moved_by: assignee?.name || "Unknown" },
       user_id: user.id,
     });
-    const labels: Record<string, string> = { todo: "To Do", in_progress: "In Progress", in_review: "In Review", done: "Done" };
-    toast.success(`Task moved to ${labels[newStatus]}`);
-    fetchData();
-  }, [tasks, employees, user, fetchData]);
+  }, [tasks, employees, user]);
 
   const handleTaskUpdate = useCallback(async (taskId: string, updates: Partial<Task>) => {
     if (!user) return;
