@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import type { Project, Task, ProjectMember } from "@/lib/types";
 import { computeProjectHealth } from "@/lib/types";
 
-export const Route = createFileRoute("/_app/projects")({
+export const Route = createFileRoute("/_app/projects/")({
   component: ProjectsPage,
 });
 
