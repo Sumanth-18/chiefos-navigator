@@ -10,7 +10,7 @@ import { AITaskBreakdownModal } from "@/components/project/AITaskBreakdownModal"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Brain, AlertTriangle, CheckCircle2, IndianRupee, CalendarDays } from "lucide-react";
+import { ArrowLeft, Sparkles, AlertTriangle, CheckCircle2, IndianRupee, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/projects/$projectId")({
