@@ -431,8 +431,8 @@ export function AITaskBreakdownModal({
               <p className="text-xs text-muted-foreground">Sending {Math.min(requirementsText.length, 15000).toLocaleString()} characters to AI for analysis</p>
             )}
 
-            <Button onClick={handleGenerate} className="w-full gap-2" disabled={!requirementsText.trim() || !deadline}>
-              <Brain className="h-4 w-4" /> Analyze & Generate Tasks
+            <Button onClick={handleGenerate} className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white" disabled={!requirementsText.trim() || !deadline}>
+              <Sparkles className="h-4 w-4" /> Generate Tasks
             </Button>
           </div>
         )}
