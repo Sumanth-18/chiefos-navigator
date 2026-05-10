@@ -407,14 +407,8 @@ export function AITaskBreakdownModal({
         )}
 
         {/* Step 2: Loading */}
-        {step === "loading" && (
-          <div className="flex-1 flex items-center justify-center p-12">
-            <div className="text-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-              <p className="text-sm text-muted-foreground">AI is analyzing requirements and generating task breakdown...</p>
-            </div>
-          </div>
-        )}
+        {step === "loading" && <LoadingState />}
+
 
         {/* Step 3: Review */}
         {step === "review" && aiResult && (
