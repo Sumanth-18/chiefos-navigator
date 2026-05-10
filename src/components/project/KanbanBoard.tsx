@@ -1,20 +1,8 @@
-import { useState, useCallback } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  useDroppable,
-  useDraggable,
-  type DragStartEvent,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
 import type { Task, Employee } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Calendar } from "lucide-react";
+import { Calendar, GripVertical } from "lucide-react";
 
 type TaskStatus = "todo" | "in_progress" | "in_review" | "done";
 
@@ -42,98 +30,82 @@ interface KanbanBoardProps {
 function TaskCard({
   task,
   employee,
-  onClick,
-  dragging,
-}: {
-  task: Task;
-  employee?: Employee;
-  onClick?: () => void;
-  dragging?: boolean;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className={`rounded-md border border-border/60 bg-card p-3 transition-all hover:border-primary/40 ${
-        dragging ? "shadow-2xl rotate-2 border-primary/60" : ""
-      }`}
-    >
-      <p className="text-sm font-medium leading-snug">{task.title}</p>
-      <div className="flex items-center gap-2 mt-2 flex-wrap">
-        <Badge className={`text-[9px] ${priorityColors[task.priority]}`}>{task.priority}</Badge>
-        {task.due_date && (
-          <span
-            className={`flex items-center gap-1 text-[10px] ${
-              new Date(task.due_date) < new Date() && task.status !== "done"
-                ? "text-destructive"
-                : "text-muted-foreground"
-            }`}
-          >
-            <Calendar className="h-2.5 w-2.5" />
-            {new Date(task.due_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-          </span>
-        )}
-      </div>
-      {employee && (
-        <div className="flex items-center gap-1.5 mt-2">
-          <Avatar className="h-5 w-5">
-            <AvatarFallback className="text-[8px]">
-              {employee.name.split(" ").map((n) => n[0]).join("")}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[10px] text-muted-foreground truncate">{employee.name}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DraggableTaskCard({
-  task,
-  employee,
+  draggedTaskId,
+  setDraggedTaskId,
   onClick,
 }: {
   task: Task;
   employee?: Employee;
+  draggedTaskId: string | null;
+  setDraggedTaskId: (id: string | null) => void;
   onClick: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id,
-    data: { task },
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-    cursor: isDragging ? "grabbing" : "grab",
-    touchAction: "none",
-  };
-
-  // Click vs drag: only trigger click if no movement
-  const handleClick = (e: React.MouseEvent) => {
-    if (isDragging) return;
-    e.stopPropagation();
-    onClick();
-  };
-
+  const isDragging = draggedTaskId === task.id;
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={handleClick}>
-      <TaskCard task={task} employee={employee} />
+    <div
+      draggable
+      onDragStart={(e) => {
+        console.log("[kanban] dragStart", task.id, task.title);
+        setDraggedTaskId(task.id);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", task.id);
+      }}
+      onDragEnd={() => setDraggedTaskId(null)}
+      onClick={onClick}
+      style={{ opacity: isDragging ? 0.4 : 1, cursor: "grab" }}
+      className="rounded-md border border-border/60 bg-card p-3 transition-all hover:border-primary/40 flex gap-2"
+    >
+      <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium leading-snug">{task.title}</p>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <Badge className={`text-[9px] ${priorityColors[task.priority]}`}>{task.priority}</Badge>
+          {task.due_date && (
+            <span
+              className={`flex items-center gap-1 text-[10px] ${
+                new Date(task.due_date) < new Date() && task.status !== "done"
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <Calendar className="h-2.5 w-2.5" />
+              {new Date(task.due_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            </span>
+          )}
+        </div>
+        {employee && (
+          <div className="flex items-center gap-1.5 mt-2">
+            <Avatar className="h-5 w-5">
+              <AvatarFallback className="text-[8px]">
+                {employee.name.split(" ").map((n) => n[0]).join("")}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-[10px] text-muted-foreground truncate">{employee.name}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function DroppableColumn({
+function Column({
   column,
   tasks,
   employees,
+  draggedTaskId,
+  setDraggedTaskId,
   onTaskClick,
+  onDropTask,
 }: {
   column: typeof COLUMNS[number];
   tasks: Task[];
   employees: Employee[];
+  draggedTaskId: string | null;
+  setDraggedTaskId: (id: string | null) => void;
   onTaskClick: (task: Task) => void;
+  onDropTask: (taskId: string, newStatus: TaskStatus) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  const [isDragOver, setIsDragOver] = useState(false);
 
   return (
     <div className="flex-1 min-w-[220px]">
@@ -143,16 +115,40 @@ function DroppableColumn({
         <span className="text-xs text-muted-foreground ml-auto">{tasks.length}</span>
       </div>
       <div
-        ref={setNodeRef}
-        className={`min-h-[400px] rounded-lg border-2 p-2 space-y-2 transition-colors ${
-          isOver ? "border-primary bg-primary/10" : "border-border/40 bg-secondary/30"
-        }`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          if (!isDragOver) setIsDragOver(true);
+        }}
+        onDragLeave={(e) => {
+          // Only clear if leaving the column container itself
+          if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+          setIsDragOver(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragOver(false);
+          const taskId = e.dataTransfer.getData("text/plain");
+          console.log("[kanban] drop", taskId, "→", column.id);
+          if (!taskId) return;
+          onDropTask(taskId, column.id);
+        }}
+        style={{
+          backgroundColor: isDragOver ? "rgba(99,102,241,0.1)" : undefined,
+          border: isDragOver ? "2px dashed #6366F1" : "2px dashed transparent",
+          borderRadius: "8px",
+          minHeight: "400px",
+          transition: "all 150ms ease",
+        }}
+        className="p-2 space-y-2 bg-secondary/30"
       >
         {tasks.map((task) => (
-          <DraggableTaskCard
+          <TaskCard
             key={task.id}
             task={task}
             employee={employees.find((e) => e.id === task.assignee_id)}
+            draggedTaskId={draggedTaskId}
+            setDraggedTaskId={setDraggedTaskId}
             onClick={() => onTaskClick(task)}
           />
         ))}
@@ -162,58 +158,29 @@ function DroppableColumn({
 }
 
 export function KanbanBoard({ tasks, employees, onTaskStatusChange, onTaskClick }: KanbanBoardProps) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
-
-  const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
-
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveId(null);
-      if (!over) return;
-
-      const task = tasks.find((t) => t.id === active.id);
-      const newStatus = over.id as TaskStatus;
-      if (!task || !COLUMNS.some((c) => c.id === newStatus)) return;
-      if (task.status === newStatus) return;
-
-      onTaskStatusChange(task.id, newStatus, task.status);
-    },
-    [tasks, onTaskStatusChange],
-  );
+  const handleDropTask = (taskId: string, newStatus: TaskStatus) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || task.status === newStatus) return;
+    setDraggedTaskId(null);
+    onTaskStatusChange(taskId, newStatus, task.status);
+  };
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {COLUMNS.map((column) => (
-          <DroppableColumn
-            key={column.id}
-            column={column}
-            tasks={tasks.filter((t) => t.status === column.id)}
-            employees={employees}
-            onTaskClick={onTaskClick}
-          />
-        ))}
-      </div>
-      <DragOverlay>
-        {activeTask ? (
-          <div className="w-[240px]">
-            <TaskCard
-              task={activeTask}
-              employee={employees.find((e) => e.id === activeTask.assignee_id)}
-              dragging
-            />
-          </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {COLUMNS.map((column) => (
+        <Column
+          key={column.id}
+          column={column}
+          tasks={tasks.filter((t) => t.status === column.id)}
+          employees={employees}
+          draggedTaskId={draggedTaskId}
+          setDraggedTaskId={setDraggedTaskId}
+          onTaskClick={onTaskClick}
+          onDropTask={handleDropTask}
+        />
+      ))}
+    </div>
   );
 }
