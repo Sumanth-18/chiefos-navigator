@@ -314,14 +314,23 @@ export function AITaskBreakdownModal({
     : aiResult?.timeline_assessment?.toLowerCase().includes("tight") ? "bg-warning/20 text-warning"
     : "bg-success/20 text-success";
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-6xl max-h-[90vh] bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative w-full max-w-[900px] max-h-[90vh] bg-card border border-border rounded-xl overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <Brain className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">AI Task Breakdown Engine</h2>
+            <Sparkles className="h-5 w-5 text-indigo-400" />
+            <div>
+              <h2 className="text-lg font-semibold">✨ AI Task Breakdown Engine</h2>
+              <p className="text-xs text-muted-foreground">Paste requirements or upload a document</p>
+            </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
