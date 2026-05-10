@@ -15,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Brain, Upload, FileText, X, ChevronDown, ChevronRight,
-  AlertTriangle, CheckCircle, Trash2, Plus, Loader2, Calendar,
+  Sparkles, Upload, FileText, X, ChevronDown, ChevronRight,
+  AlertTriangle, CheckCircle, Trash2, Plus, Loader2,
 } from "lucide-react";
 
 function LoadingState() {
