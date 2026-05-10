@@ -19,6 +19,28 @@ import {
   AlertTriangle, CheckCircle, Trash2, Plus, Loader2, Calendar,
 } from "lucide-react";
 
+function LoadingState() {
+  const messages = [
+    "Analyzing requirements...",
+    "Matching skills to tasks...",
+    "Optimizing workload distribution...",
+    "Finalizing task breakdown...",
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => Math.min(i + 1, messages.length - 1)), 800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="flex-1 flex items-center justify-center p-12">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+        <p className="text-sm text-muted-foreground transition-opacity">{messages[idx]}</p>
+      </div>
+    </div>
+  );
+}
+
 interface AITaskBreakdownModalProps {
   project: Project;
   employees: Employee[];
