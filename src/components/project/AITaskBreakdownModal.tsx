@@ -15,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Brain, Upload, FileText, X, ChevronDown, ChevronRight,
-  AlertTriangle, CheckCircle, Trash2, Plus, Loader2, Calendar,
+  Sparkles, Upload, FileText, X, ChevronDown, ChevronRight,
+  AlertTriangle, CheckCircle, Trash2, Plus, Loader2,
 } from "lucide-react";
 
 function LoadingState() {
@@ -314,14 +314,23 @@ export function AITaskBreakdownModal({
     : aiResult?.timeline_assessment?.toLowerCase().includes("tight") ? "bg-warning/20 text-warning"
     : "bg-success/20 text-success";
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-      <div className="relative w-full max-w-6xl max-h-[90vh] bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative w-full max-w-[900px] max-h-[90vh] bg-card border border-border rounded-xl overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <Brain className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold">AI Task Breakdown Engine</h2>
+            <Sparkles className="h-5 w-5 text-indigo-400" />
+            <div>
+              <h2 className="text-lg font-semibold">✨ AI Task Breakdown Engine</h2>
+              <p className="text-xs text-muted-foreground">Paste requirements or upload a document</p>
+            </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
@@ -422,8 +431,8 @@ export function AITaskBreakdownModal({
               <p className="text-xs text-muted-foreground">Sending {Math.min(requirementsText.length, 15000).toLocaleString()} characters to AI for analysis</p>
             )}
 
-            <Button onClick={handleGenerate} className="w-full gap-2" disabled={!requirementsText.trim() || !deadline}>
-              <Brain className="h-4 w-4" /> Analyze & Generate Tasks
+            <Button onClick={handleGenerate} className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white" disabled={!requirementsText.trim() || !deadline}>
+              <Sparkles className="h-4 w-4" /> Generate Tasks
             </Button>
           </div>
         )}
