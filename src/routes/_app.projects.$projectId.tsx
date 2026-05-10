@@ -263,9 +263,12 @@ function ProjectDetailPage() {
         <section className="flex-1 min-w-0 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Tasks</h2>
-            <Button onClick={() => setShowAIBreakdown(true)} size="sm" className="gap-2">
-              <Brain className="h-4 w-4" /> AI Task Breakdown
-            </Button>
+            <button
+              onClick={() => setShowAIBreakdown(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-600/30 transition-all"
+            >
+              <Sparkles className="h-4 w-4" /> AI Task Breakdown
+            </button>
           </div>
           <KanbanBoard
             tasks={tasks}
