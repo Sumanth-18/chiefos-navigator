@@ -30,6 +30,7 @@ function NewProjectWizard() {
   const [aiLoading, setAiLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
   const [autoTasks, setAutoTasks] = useState(true);
+  const [launching, setLaunching] = useState(false);
   const [editedTasks, setEditedTasks] = useState<AISuggestion["suggestedTasks"]>([]);
 
   const [form, setForm] = useState({
