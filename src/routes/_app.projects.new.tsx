@@ -335,9 +335,9 @@ function NewProjectWizard() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(2)}><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>
-              <Button onClick={launchProject} className="glow-primary">
-                <Sparkles className="mr-2 h-4 w-4" />Launch Project
-              </Button>
+              <Button onClick={launchProject} disabled={launching} className="glow-primary">
+                {launching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {launching ? "Launching..." : "Launch Project"}
             </div>
           </motion.div>
         )}
