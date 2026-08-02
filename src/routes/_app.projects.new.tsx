@@ -91,8 +91,23 @@ function NewProjectWizard() {
   };
 
   const launchProject = async () => {
-    if (!user || !suggestion) return;
+    if (!user || !suggestion || launching) return;
+    setLaunching(true);
     try {
+      // Guard against duplicates: reuse an identical project created moments ago
+      const { data: existing } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("name", form.name)
+        .gte("created_at", new Date(Date.now() - 60000).toISOString())
+        .maybeSingle();
+      if (existing) {
+        toast.info("This project was already created");
+        navigate({ to: "/projects" });
+        return;
+      }
+
       const { data: project, error: pErr } = await supabase.from("projects").insert({
         name: form.name, brief: form.brief || null,
         required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
