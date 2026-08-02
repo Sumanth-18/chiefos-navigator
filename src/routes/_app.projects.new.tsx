@@ -338,6 +338,7 @@ function NewProjectWizard() {
               <Button onClick={launchProject} disabled={launching} className="glow-primary">
                 {launching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                 {launching ? "Launching..." : "Launch Project"}
+              </Button>
             </div>
           </motion.div>
         )}
