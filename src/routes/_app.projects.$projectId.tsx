@@ -200,6 +200,12 @@ function ProjectDetailPage() {
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-muted-foreground" />
               <span className={`text-sm font-medium ${deadlineClass}`}>{deadlineLabel}</span>
+              <button
+                onClick={() => setShowDeadlineDialog(true)}
+                className="ml-auto text-xs text-primary hover:underline"
+              >
+                Change
+              </button>
             </div>
             {project.budget != null && (
               <div className="flex items-center gap-2">
