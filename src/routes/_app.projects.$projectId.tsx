@@ -7,6 +7,7 @@ import { computeProjectHealth, computeEmployeeLoad } from "@/lib/types";
 import { KanbanBoard } from "@/components/project/KanbanBoard";
 import { TaskDetailPanel } from "@/components/project/TaskDetailPanel";
 import { AITaskBreakdownModal } from "@/components/project/AITaskBreakdownModal";
+import { DeadlineCascadeDialog } from "@/components/project/DeadlineCascadeDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
