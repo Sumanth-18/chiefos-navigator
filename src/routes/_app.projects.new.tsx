@@ -164,6 +164,8 @@ function NewProjectWizard() {
       navigate({ to: "/projects" });
     } catch (err: any) {
       toast.error(err.message || "Failed to launch project");
+    } finally {
+      setLaunching(false);
     }
   };
 
