@@ -46,6 +46,7 @@ function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showAIBreakdown, setShowAIBreakdown] = useState(false);
+  const [showDeadlineDialog, setShowDeadlineDialog] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
