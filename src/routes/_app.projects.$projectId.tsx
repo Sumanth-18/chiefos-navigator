@@ -309,6 +309,19 @@ function ProjectDetailPage() {
           onTasksCreated={fetchData}
         />
       )}
+
+      {showDeadlineDialog && user && (
+        <DeadlineCascadeDialog
+          project={project}
+          projectTasks={tasks}
+          allTasks={allTasks}
+          employees={employees}
+          leaves={leaves}
+          userId={user.id}
+          onClose={() => setShowDeadlineDialog(false)}
+          onApplied={fetchData}
+        />
+      )}
     </div>
   );
 }
