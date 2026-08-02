@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
-import type { Project, Employee, Task, Leave } from "@/lib/types";
+import type { Project, Employee, Task, Leave, AuditLogEntry } from "@/lib/types";
 import { computeEmployeeLoad, computeProjectHealth } from "@/lib/types";
+import { DepartmentBreakdown } from "@/components/dashboard/DepartmentBreakdown";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
