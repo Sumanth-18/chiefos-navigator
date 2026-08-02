@@ -30,6 +30,7 @@ function NewProjectWizard() {
   const [aiLoading, setAiLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null);
   const [autoTasks, setAutoTasks] = useState(true);
+  const [launching, setLaunching] = useState(false);
   const [editedTasks, setEditedTasks] = useState<AISuggestion["suggestedTasks"]>([]);
 
   const [form, setForm] = useState({
@@ -91,8 +92,23 @@ function NewProjectWizard() {
   };
 
   const launchProject = async () => {
-    if (!user || !suggestion) return;
+    if (!user || !suggestion || launching) return;
+    setLaunching(true);
     try {
+      // Guard against duplicates: reuse an identical project created moments ago
+      const { data: existing } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("name", form.name)
+        .gte("created_at", new Date(Date.now() - 60000).toISOString())
+        .maybeSingle();
+      if (existing) {
+        toast.info("This project was already created");
+        navigate({ to: "/projects" });
+        return;
+      }
+
       const { data: project, error: pErr } = await supabase.from("projects").insert({
         name: form.name, brief: form.brief || null,
         required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
@@ -148,6 +164,8 @@ function NewProjectWizard() {
       navigate({ to: "/projects" });
     } catch (err: any) {
       toast.error(err.message || "Failed to launch project");
+    } finally {
+      setLaunching(false);
     }
   };
 
@@ -317,8 +335,9 @@ function NewProjectWizard() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(2)}><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>
-              <Button onClick={launchProject} className="glow-primary">
-                <Sparkles className="mr-2 h-4 w-4" />Launch Project
+              <Button onClick={launchProject} disabled={launching} className="glow-primary">
+                {launching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {launching ? "Launching..." : "Launch Project"}
               </Button>
             </div>
           </motion.div>

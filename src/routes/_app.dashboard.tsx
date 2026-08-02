@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
-import type { Project, Employee, Task, Leave } from "@/lib/types";
+import type { Project, Employee, Task, Leave, AuditLogEntry } from "@/lib/types";
 import { computeEmployeeLoad, computeProjectHealth } from "@/lib/types";
+import { DepartmentBreakdown } from "@/components/dashboard/DepartmentBreakdown";
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -20,6 +21,7 @@ function DashboardPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [leaves, setLeaves] = useState<Leave[]>([]);
+  const [events, setEvents] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,16 +31,18 @@ function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     async function fetchData() {
-      const [pRes, eRes, tRes, lRes] = await Promise.all([
+      const [pRes, eRes, tRes, lRes, aRes] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("employees").select("*"),
         supabase.from("tasks").select("*"),
         supabase.from("leaves").select("*"),
+        supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(500),
       ]);
       setProjects((pRes.data as Project[]) || []);
       setEmployees((eRes.data as Employee[]) || []);
       setTasks((tRes.data as Task[]) || []);
       setLeaves((lRes.data as Leave[]) || []);
+      setEvents((aRes.data as AuditLogEntry[]) || []);
       setLoading(false);
     }
     fetchData();
@@ -206,6 +210,8 @@ function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <DepartmentBreakdown employees={employees} tasks={tasks} leaves={leaves} events={events} />
     </div>
   );
 }
