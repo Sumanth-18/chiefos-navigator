@@ -210,6 +210,8 @@ function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <DepartmentBreakdown employees={employees} tasks={tasks} leaves={leaves} events={events} />
     </div>
   );
 }
