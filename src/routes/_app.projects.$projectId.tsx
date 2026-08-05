@@ -8,6 +8,7 @@ import { KanbanBoard } from "@/components/project/KanbanBoard";
 import { TaskDetailPanel } from "@/components/project/TaskDetailPanel";
 import { AITaskBreakdownModal } from "@/components/project/AITaskBreakdownModal";
 import { DeadlineCascadeDialog } from "@/components/project/DeadlineCascadeDialog";
+import { ProjectScopeAnalyzer, type ScopeApplyPayload } from "@/components/project/ProjectScopeAnalyzer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -47,6 +48,7 @@ function ProjectDetailPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showAIBreakdown, setShowAIBreakdown] = useState(false);
   const [showDeadlineDialog, setShowDeadlineDialog] = useState(false);
+  const [showScope, setShowScope] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
