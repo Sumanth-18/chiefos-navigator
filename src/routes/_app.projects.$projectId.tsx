@@ -135,6 +135,26 @@ function ProjectDetailPage() {
     fetchData();
   }, [user, project, fetchData]);
 
+  const handleScopeApply = useCallback(async (payload: ScopeApplyPayload) => {
+    if (!user || !project) return;
+    const updates: Record<string, unknown> = { required_skills: payload.skills };
+    if (payload.budget > 0) updates.budget = payload.budget;
+    const { error } = await supabase.from("projects").update(updates).eq("id", project.id);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("audit_log").insert({
+      action: "project_scope_analyzed", entity_type: "project", entity_id: project.id,
+      details: {
+        name: project.name, skills: payload.skills, budget: payload.budget,
+        team_size: payload.teamSize, weeks: payload.weeks,
+      },
+      user_id: user.id,
+    });
+    toast.success("Project skills and budget updated");
+    setShowScope(false);
+    fetchData();
+  }, [user, project, fetchData]);
+
+
   if (authLoading || loading) {
     return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   }
