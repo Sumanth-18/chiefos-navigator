@@ -285,7 +285,7 @@ function NewProjectWizard() {
                   <div className="space-y-2"><Label>Budget (₹)</Label><Input type="number" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
                 </div>
                 <div className="flex justify-end pt-2">
-                  <Button onClick={requestAISuggestion} disabled={!form.name || !form.required_skills || aiLoading || employees.length === 0}>
+                  <Button onClick={requestAISuggestion} disabled={!form.name || skills.length === 0 || aiLoading || employees.length === 0}>
                     {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing workloads...</> : <><Zap className="mr-2 h-4 w-4" />Get AI Suggestions</>}
                   </Button>
                 </div>
