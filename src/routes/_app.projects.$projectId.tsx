@@ -237,6 +237,20 @@ function ProjectDetailPage() {
             )}
           </div>
 
+          {/* Required skills */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">Required Skills</span>
+              <span className="text-xs text-muted-foreground">{project.required_skills?.length || 0}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(project.required_skills || []).map((s) => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>)}
+              {(project.required_skills || []).length === 0 && <span className="text-xs text-muted-foreground">None set — analyze a document</span>}
+            </div>
+          </div>
+
+
+
           {/* Risks */}
           {overdueTasks.length > 0 && (
             <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
