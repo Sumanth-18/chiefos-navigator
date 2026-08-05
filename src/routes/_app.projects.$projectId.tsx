@@ -137,7 +137,7 @@ function ProjectDetailPage() {
 
   const handleScopeApply = useCallback(async (payload: ScopeApplyPayload) => {
     if (!user || !project) return;
-    const updates: Record<string, unknown> = { required_skills: payload.skills };
+    const updates: { required_skills: string[]; budget?: number } = { required_skills: payload.skills };
     if (payload.budget > 0) updates.budget = payload.budget;
     const { error } = await supabase.from("projects").update(updates).eq("id", project.id);
     if (error) { toast.error(error.message); return; }
