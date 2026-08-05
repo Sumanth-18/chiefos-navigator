@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Employee, Task, Leave, AISuggestion } from "@/lib/types";
 import { computeEmployeeLoad } from "@/lib/types";
+import { ProjectScopeAnalyzer } from "@/components/project/ProjectScopeAnalyzer";
 
 export const Route = createFileRoute("/_app/projects/new")({
   component: NewProjectWizard,
