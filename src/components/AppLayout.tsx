@@ -3,7 +3,7 @@ import { Outlet } from '@tanstack/react-router';
 import { AppSidebar } from './AppSidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { seedDemoData } from '@/server/seed.functions';
+import { seedDemoData } from '@/lib/seed.functions';
 import { toast } from 'sonner';
 
 export function AppLayout() {

@@ -11,7 +11,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { seedDemoData } from '@/server/seed.functions';
+import { seedDemoData } from '@/lib/seed.functions';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
