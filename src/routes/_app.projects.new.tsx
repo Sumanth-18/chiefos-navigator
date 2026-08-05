@@ -33,10 +33,23 @@ function NewProjectWizard() {
   const [launching, setLaunching] = useState(false);
   const [editedTasks, setEditedTasks] = useState<AISuggestion["suggestedTasks"]>([]);
 
+  const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+
   const [form, setForm] = useState({
-    name: "", brief: "", required_skills: "", deadline: "",
+    name: "", brief: "", deadline: "",
     priority: "medium" as const, budget: "", client_name: "",
   });
+
+  const addSkill = (raw: string) => {
+    const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    setSkills((prev) => [...prev, ...parts.filter((p) => !prev.includes(p))]);
+    setSkillInput("");
+  };
+
+  const suggestedSkills = Array.from(new Set(employees.flatMap((e) => e.skills || []))).filter((s) => !skills.includes(s));
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
