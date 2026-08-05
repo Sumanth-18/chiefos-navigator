@@ -8,10 +8,11 @@ import { KanbanBoard } from "@/components/project/KanbanBoard";
 import { TaskDetailPanel } from "@/components/project/TaskDetailPanel";
 import { AITaskBreakdownModal } from "@/components/project/AITaskBreakdownModal";
 import { DeadlineCascadeDialog } from "@/components/project/DeadlineCascadeDialog";
+import { ProjectScopeAnalyzer, type ScopeApplyPayload } from "@/components/project/ProjectScopeAnalyzer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Sparkles, AlertTriangle, CheckCircle2, IndianRupee, CalendarDays } from "lucide-react";
+import { ArrowLeft, Sparkles, AlertTriangle, CheckCircle2, IndianRupee, CalendarDays, FileUp, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/projects/$projectId")({
@@ -47,6 +48,7 @@ function ProjectDetailPage() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [showAIBreakdown, setShowAIBreakdown] = useState(false);
   const [showDeadlineDialog, setShowDeadlineDialog] = useState(false);
+  const [showScope, setShowScope] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
@@ -133,6 +135,26 @@ function ProjectDetailPage() {
     fetchData();
   }, [user, project, fetchData]);
 
+  const handleScopeApply = useCallback(async (payload: ScopeApplyPayload) => {
+    if (!user || !project) return;
+    const updates: { required_skills: string[]; budget?: number } = { required_skills: payload.skills };
+    if (payload.budget > 0) updates.budget = payload.budget;
+    const { error } = await supabase.from("projects").update(updates).eq("id", project.id);
+    if (error) { toast.error(error.message); return; }
+    await supabase.from("audit_log").insert({
+      action: "project_scope_analyzed", entity_type: "project", entity_id: project.id,
+      details: {
+        name: project.name, skills: payload.skills, budget: payload.budget,
+        team_size: payload.teamSize, weeks: payload.weeks,
+      },
+      user_id: user.id,
+    });
+    toast.success("Project skills and budget updated");
+    setShowScope(false);
+    fetchData();
+  }, [user, project, fetchData]);
+
+
   if (authLoading || loading) {
     return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
   }
@@ -215,6 +237,20 @@ function ProjectDetailPage() {
             )}
           </div>
 
+          {/* Required skills */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">Required Skills</span>
+              <span className="text-xs text-muted-foreground">{project.required_skills?.length || 0}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(project.required_skills || []).map((s) => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>)}
+              {(project.required_skills || []).length === 0 && <span className="text-xs text-muted-foreground">None set — analyze a document</span>}
+            </div>
+          </div>
+
+
+
           {/* Risks */}
           {overdueTasks.length > 0 && (
             <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
@@ -271,12 +307,20 @@ function ProjectDetailPage() {
         <section className="flex-1 min-w-0 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Tasks</h2>
-            <button
-              onClick={() => setShowAIBreakdown(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-600/30 transition-all"
-            >
-              <Sparkles className="h-4 w-4" /> AI Task Breakdown
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowScope(true)}
+                className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-all hover:border-primary hover:text-primary"
+              >
+                <FileUp className="h-4 w-4" /> Upload & Analyze Document
+              </button>
+              <button
+                onClick={() => setShowAIBreakdown(true)}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-600/30 transition-all"
+              >
+                <Sparkles className="h-4 w-4" /> AI Task Breakdown
+              </button>
+            </div>
           </div>
           <KanbanBoard
             tasks={tasks}
@@ -321,6 +365,32 @@ function ProjectDetailPage() {
           onClose={() => setShowDeadlineDialog(false)}
           onApplied={fetchData}
         />
+      )}
+
+      {showScope && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-6" onClick={() => setShowScope(false)}>
+          <div className="w-full max-w-[900px] rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center gap-2">
+              <FileUp className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Project Document Analysis</h2>
+              <button onClick={() => setShowScope(false)} className="ml-auto text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Upload the project document — AI extracts required skills, how many people are needed, and a full budget plan. Everything stays editable before you save.
+            </p>
+            <ProjectScopeAnalyzer
+              projectName={project.name}
+              deadline={project.deadline || ""}
+              currentBudget={project.budget ?? null}
+              initialText={project.brief || ""}
+              employees={employees}
+              allTasks={allTasks}
+              leaves={leaves}
+              applyLabel="Save skills & budget to project"
+              onApply={handleScopeApply}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

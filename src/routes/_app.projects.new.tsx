@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Employee, Task, Leave, AISuggestion } from "@/lib/types";
 import { computeEmployeeLoad } from "@/lib/types";
+import { ProjectScopeAnalyzer } from "@/components/project/ProjectScopeAnalyzer";
 
 export const Route = createFileRoute("/_app/projects/new")({
   component: NewProjectWizard,
@@ -33,10 +34,23 @@ function NewProjectWizard() {
   const [launching, setLaunching] = useState(false);
   const [editedTasks, setEditedTasks] = useState<AISuggestion["suggestedTasks"]>([]);
 
+  const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+
   const [form, setForm] = useState({
-    name: "", brief: "", required_skills: "", deadline: "",
+    name: "", brief: "", deadline: "",
     priority: "medium" as const, budget: "", client_name: "",
   });
+
+  const addSkill = (raw: string) => {
+    const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    setSkills((prev) => [...prev, ...parts.filter((p) => !prev.includes(p))]);
+    setSkillInput("");
+  };
+
+  const suggestedSkills = Array.from(new Set(employees.flatMap((e) => e.skills || []))).filter((s) => !skills.includes(s));
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
@@ -61,7 +75,7 @@ function NewProjectWizard() {
     try {
       const project = {
         name: form.name, brief: form.brief,
-        required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
+        required_skills: skills,
         deadline: form.deadline, priority: form.priority,
       };
       // Send computed loads to AI instead of static
@@ -111,7 +125,7 @@ function NewProjectWizard() {
 
       const { data: project, error: pErr } = await supabase.from("projects").insert({
         name: form.name, brief: form.brief || null,
-        required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
+        required_skills: skills,
         deadline: form.deadline || null, priority: form.priority,
         budget: form.budget ? parseFloat(form.budget) : null,
         client_name: form.client_name || null,
@@ -205,7 +219,54 @@ function NewProjectWizard() {
               <CardContent className="space-y-4">
                 <div className="space-y-2"><Label>Project Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g., Cloud Migration for TCS" /></div>
                 <div className="space-y-2"><Label>Brief / Description</Label><Textarea value={form.brief} onChange={(e) => setForm({ ...form, brief: e.target.value })} rows={4} placeholder="Describe goals, scope, deliverables..." /></div>
-                <div className="space-y-2"><Label>Required Skills *</Label><Input value={form.required_skills} onChange={(e) => setForm({ ...form, required_skills: e.target.value })} placeholder="React, AWS, Docker, CI/CD" /></div>
+                <div className="space-y-2">
+                  <Label>Required Skills * ({skills.length} selected — add as many as you need)</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {skills.map((s) => (
+                      <Badge key={s} variant="outline" className="gap-1">
+                        {s}
+                        <button type="button" onClick={() => setSkills(skills.filter((x) => x !== s))} className="hover:text-destructive"><X className="h-3 w-3" /></button>
+                      </Badge>
+                    ))}
+                    {skills.length === 0 && <span className="text-xs text-muted-foreground">No skills added yet</span>}
+                  </div>
+                  <Input
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(skillInput); } }}
+                    onBlur={() => addSkill(skillInput)}
+                    placeholder="Type a skill and press Enter (or paste a comma-separated list)"
+                  />
+                  {suggestedSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {suggestedSkills.slice(0, 20).map((s) => (
+                        <button key={s} type="button" onClick={() => addSkill(s)} className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:border-primary hover:text-primary">
+                          + {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 rounded-xl border border-border/60 p-4">
+                  <Label className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Upload project document (optional)</Label>
+                  <p className="text-xs text-muted-foreground">AI reads the document and suggests required skills, people needed and a budget plan.</p>
+                  <ProjectScopeAnalyzer
+                    projectName={form.name}
+                    deadline={form.deadline}
+                    currentBudget={form.budget ? parseFloat(form.budget) : null}
+                    initialText={form.brief}
+                    employees={employees}
+                    allTasks={tasks}
+                    leaves={leaves}
+                    applyLabel="Use these skills & budget"
+                    onApply={({ skills: aiSkills, budget }) => {
+                      setSkills(Array.from(new Set([...skills, ...aiSkills])));
+                      setForm((f) => ({ ...f, budget: budget ? String(budget) : f.budget }));
+                      toast.success("Applied AI skills and budget");
+                    }}
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Client</Label><Input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} /></div>
                   <div className="space-y-2">
@@ -224,7 +285,7 @@ function NewProjectWizard() {
                   <div className="space-y-2"><Label>Budget (₹)</Label><Input type="number" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} /></div>
                 </div>
                 <div className="flex justify-end pt-2">
-                  <Button onClick={requestAISuggestion} disabled={!form.name || !form.required_skills || aiLoading || employees.length === 0}>
+                  <Button onClick={requestAISuggestion} disabled={!form.name || skills.length === 0 || aiLoading || employees.length === 0}>
                     {aiLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analyzing workloads...</> : <><Zap className="mr-2 h-4 w-4" />Get AI Suggestions</>}
                   </Button>
                 </div>
