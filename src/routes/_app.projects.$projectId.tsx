@@ -366,6 +366,32 @@ function ProjectDetailPage() {
           onApplied={fetchData}
         />
       )}
+
+      {showScope && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-6" onClick={() => setShowScope(false)}>
+          <div className="w-full max-w-[900px] rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex items-center gap-2">
+              <FileUp className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Project Document Analysis</h2>
+              <button onClick={() => setShowScope(false)} className="ml-auto text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Upload the project document — AI extracts required skills, how many people are needed, and a full budget plan. Everything stays editable before you save.
+            </p>
+            <ProjectScopeAnalyzer
+              projectName={project.name}
+              deadline={project.deadline || ""}
+              currentBudget={project.budget ?? null}
+              initialText={project.brief || ""}
+              employees={employees}
+              allTasks={allTasks}
+              leaves={leaves}
+              applyLabel="Save skills & budget to project"
+              onApply={handleScopeApply}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
