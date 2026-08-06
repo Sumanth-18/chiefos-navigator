@@ -21,7 +21,7 @@ export const analyzeProjectScope = createServerFn({ method: "POST" })
         "X-Lovable-AIG-SDK": "fetch",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: "You are a delivery planning AI for an Indian IT services company. Always return valid JSON only, no markdown." },
           { role: "user", content: buildProjectScopePrompt(data) },
