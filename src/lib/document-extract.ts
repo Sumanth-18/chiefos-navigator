@@ -1,38 +1,28 @@
-// Polyfill required by pdfjs-dist v5 on older Safari/iOS engines.
-function ensurePromiseWithResolvers() {
-  const P = Promise as unknown as { withResolvers?: unknown };
-  if (typeof P.withResolvers !== "function") {
-    P.withResolvers = function <T>() {
-      let resolve!: (value: T | PromiseLike<T>) => void;
-      let reject!: (reason?: unknown) => void;
-      const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
-      return { promise, resolve, reject };
-    };
-  }
-}
-
 async function extractPdf(file: File): Promise<string> {
-  ensurePromiseWithResolvers();
-  const pdfjsLib = await import("pdfjs-dist");
+  // The legacy bundle includes the Promise/AbortSignal/iterator polyfills that
+  // pdf.js v5's modern build assumes. That matters on older Safari/WebViews.
+  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
   try {
-    const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+    const workerUrl = (await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")).default;
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
   } catch {
-    // fall back to main-thread parsing below
+    // getDocument can still use its in-process fallback when a worker URL is
+    // unavailable, so extraction remains usable in constrained webviews.
   }
 
-  // Keep a pristine copy: pdf.js transfers (detaches) the buffer it receives.
-  const source = new Uint8Array(await file.arrayBuffer());
+  // pdf.js may transfer the Uint8Array to its worker. Give it a fresh owned
+  // copy exactly once; retrying the same loading task can encounter a detached
+  // buffer and obscures the original error.
+  const source = new Uint8Array(await file.arrayBuffer()).slice();
+  const loadingTask = pdfjsLib.getDocument({
+    data: source,
+    isEvalSupported: false,
+    useSystemFonts: false,
+  });
 
-  const read = async (disableWorker: boolean) => {
-    const pdf = await pdfjsLib.getDocument({
-      data: source.slice(),
-      disableWorker,
-      isEvalSupported: false,
-      useSystemFonts: false,
-    } as never).promise;
-
+  try {
+    const pdf = await loadingTask.promise;
     let text = "";
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
@@ -41,16 +31,16 @@ async function extractPdf(file: File): Promise<string> {
       text += items.map((it) => (it && typeof it === "object" && "str" in it ? String((it as { str: unknown }).str) : "")).join(" ") + "\n";
     }
     return text.trim();
-  };
-
-  try {
-    return await read(false);
-  } catch {
-    return await read(true);
+  } finally {
+    await loadingTask.destroy().catch(() => undefined);
   }
 }
 
 export async function extractTextFromFile(file: File): Promise<string> {
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("The selected file is empty or unavailable. Please choose it again.");
+  }
+
   const name = file.name.toLowerCase();
 
   if (name.endsWith(".txt") || name.endsWith(".md") || file.type.startsWith("text/")) {
