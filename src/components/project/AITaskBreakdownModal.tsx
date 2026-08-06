@@ -115,7 +115,8 @@ export function AITaskBreakdownModal({
         setRequirementsText(text);
       } else if (file.name.endsWith(".pdf")) {
         const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
         const buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buffer } as any).promise;
         let fullText = "";
