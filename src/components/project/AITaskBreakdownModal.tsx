@@ -109,37 +109,15 @@ export function AITaskBreakdownModal({
     setUploadedFileName(`${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
 
     try {
-      if (file.name.endsWith(".txt")) {
-        const text = await file.text();
-        setExtractedText(text);
-        setRequirementsText(text);
-      } else if (file.name.endsWith(".pdf")) {
-        const pdfjsLib = await import("pdfjs-dist");
-        const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: buffer } as any).promise;
-        let fullText = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          const strings = content.items
-            .filter((item: any) => "str" in item)
-            .map((item: any) => item.str as string);
-          fullText += strings.join(" ") + "\n";
-        }
-        setExtractedText(fullText);
-        setRequirementsText(fullText);
-      } else if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
-        const mammoth = await import("mammoth");
-        const buffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        setExtractedText(result.value);
-        setRequirementsText(result.value);
-      } else {
-        setExtractError("Unsupported file type. Please use .pdf, .txt, .docx, or .doc");
+      const { extractTextFromFile: extractFile } = await import("@/lib/document-extract");
+      const text = await extractFile(file);
+      if (!text) {
+        setExtractError("No readable text found in the document.");
         return;
       }
+      setExtractedText(text);
+      setRequirementsText(text);
+
 
       // Auto-detect deadlines
       autoDetectDeadline(extractedText || requirementsText);
