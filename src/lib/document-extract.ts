@@ -22,11 +22,12 @@ async function extractPdf(file: File): Promise<string> {
     // fall back to main-thread parsing below
   }
 
-  const buffer = await file.arrayBuffer();
+  // Keep a pristine copy: pdf.js transfers (detaches) the buffer it receives.
+  const source = new Uint8Array(await file.arrayBuffer());
 
   const read = async (disableWorker: boolean) => {
     const pdf = await pdfjsLib.getDocument({
-      data: new Uint8Array(buffer),
+      data: source.slice(),
       disableWorker,
       isEvalSupported: false,
       useSystemFonts: false,
@@ -64,8 +65,8 @@ export async function extractTextFromFile(file: File): Promise<string> {
 
   if (name.endsWith(".docx")) {
     const mammoth = await import("mammoth");
-    const buffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const result = await mammoth.extractRawText({ arrayBuffer: bytes.slice().buffer });
     return result.value.trim();
   }
 
