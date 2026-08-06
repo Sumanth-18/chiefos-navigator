@@ -117,13 +117,10 @@ export function AITaskBreakdownModal({
       }
       setExtractedText(text);
       setRequirementsText(text);
-
-
-      // Auto-detect deadlines
-      autoDetectDeadline(extractedText || requirementsText);
+      autoDetectDeadline(text);
     } catch (err) {
       console.error("Extraction error:", err);
-      setExtractError("Could not read file. Try copy-pasting the text instead.");
+      setExtractError(err instanceof Error ? err.message : "Could not read file. Try copy-pasting the text instead.");
     } finally {
       setExtracting(false);
     }
