@@ -19,7 +19,7 @@ async function extractPdf(file: File): Promise<string> {
     data: source,
     isEvalSupported: false,
     useSystemFonts: false,
-  });
+  } as Parameters<typeof pdfjsLib.getDocument>[0]);
 
   try {
     const pdf = await loadingTask.promise;
