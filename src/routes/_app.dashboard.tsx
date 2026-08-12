@@ -211,7 +211,29 @@ function DashboardPage() {
         </Card>
       </div>
 
+      <Card className="glass-card">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <Wallet className="h-4 w-4 text-primary" />
+          <CardTitle className="text-lg">Finance</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 sm:grid-cols-3">
+          <div>
+            <p className="text-sm text-muted-foreground">Total budgeted</p>
+            <p className="text-2xl font-bold tabular-nums">{formatINR(totalBudgeted)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Total spent</p>
+            <p className="text-2xl font-bold tabular-nums">{formatINR(totalSpent)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Overall variance</p>
+            <p className={`text-2xl font-bold tabular-nums ${toneClass[financeTone]}`}>{overallVariancePct}%</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <DepartmentBreakdown employees={employees} tasks={tasks} leaves={leaves} events={events} />
+
     </div>
   );
 }
