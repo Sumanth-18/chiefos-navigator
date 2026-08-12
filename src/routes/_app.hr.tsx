@@ -137,11 +137,11 @@ function HROpsPage() {
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={months}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-              <Line type="monotone" dataKey="headcount" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} />
+              <YAxis allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} />
+              <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} />
+              <Line type="monotone" dataKey="headcount" stroke="var(--primary)" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
