@@ -35,19 +35,22 @@ function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     async function fetchData() {
-      const [pRes, eRes, tRes, lRes, aRes] = await Promise.all([
+      const [pRes, eRes, tRes, lRes, aRes, xRes] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("employees").select("*"),
         supabase.from("tasks").select("*"),
         supabase.from("leaves").select("*"),
         supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(500),
+        supabase.from("expenses").select("*"),
       ]);
       setProjects((pRes.data as Project[]) || []);
       setEmployees((eRes.data as Employee[]) || []);
       setTasks((tRes.data as Task[]) || []);
       setLeaves((lRes.data as Leave[]) || []);
       setEvents((aRes.data as AuditLogEntry[]) || []);
+      setExpenses((xRes.data as unknown as Expense[]) || []);
       setLoading(false);
+
     }
     fetchData();
   }, [user]);
@@ -72,7 +75,13 @@ function DashboardPage() {
   const overloadedCount = employeesWithLoad.filter((e) => e.computed_load > 90).length;
   const onLeaveCount = leaves.filter((l) => l.status === "approved" && new Date(l.start_date) <= new Date() && new Date(l.end_date) >= new Date()).length;
 
+  const totalBudgeted = projects.filter((p) => p.status === "active").reduce((s, p) => s + Number(p.budget || 0), 0);
+  const totalSpent = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const overallVariancePct = totalBudgeted > 0 ? Math.round(((totalBudgeted - totalSpent) / totalBudgeted) * 100) : 0;
+  const financeTone = varianceTone(totalBudgeted, totalSpent);
+
   const kpis = [
+
     { label: "Active Projects", value: activeProjects, total: projects.length, icon: FolderKanban, color: "text-primary" },
     { label: "Team Members", value: employees.length, icon: Users, color: "text-info" },
     { label: "Tasks Done", value: completedTasks, total: tasks.length, icon: CheckSquare, color: "text-success" },
