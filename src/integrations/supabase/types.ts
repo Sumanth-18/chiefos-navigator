@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      attrition_events: {
+        Row: {
+          created_at: string
+          employee_id: string | null
+          exit_date: string
+          id: string
+          logged_by: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id?: string | null
+          exit_date?: string
+          id?: string
+          logged_by?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string | null
+          exit_date?: string
+          id?: string
+          logged_by?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attrition_events_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -44,6 +82,53 @@ export type Database = {
         }
         Relationships: []
       }
+      deals: {
+        Row: {
+          client_name: string
+          created_at: string
+          expected_close_date: string | null
+          id: string
+          owner_id: string | null
+          stage: string
+          updated_at: string
+          user_id: string
+          value: number
+          won_at: string | null
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          owner_id?: string | null
+          stage?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+          won_at?: string | null
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          expected_close_date?: string | null
+          id?: string
+          owner_id?: string | null
+          stage?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+          won_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           avatar_url: string | null
@@ -53,6 +138,8 @@ export type Database = {
           department: string
           email: string | null
           id: string
+          is_active: boolean
+          joined_at: string
           leaves_booked: number
           name: string
           on_time_count: number
@@ -71,6 +158,8 @@ export type Database = {
           department?: string
           email?: string | null
           id?: string
+          is_active?: boolean
+          joined_at?: string
           leaves_booked?: number
           name: string
           on_time_count?: number
@@ -89,6 +178,8 @@ export type Database = {
           department?: string
           email?: string | null
           id?: string
+          is_active?: boolean
+          joined_at?: string
           leaves_booked?: number
           name?: string
           on_time_count?: number
@@ -100,6 +191,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string
+          id: string
+          project_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description: string
+          id?: string
+          project_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          project_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leaves: {
         Row: {
