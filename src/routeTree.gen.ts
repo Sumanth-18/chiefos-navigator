@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
+import { Route as AppSalesRouteImport } from './routes/_app.sales'
 import { Route as AppLeavesRouteImport } from './routes/_app.leaves'
 import { Route as AppHrRouteImport } from './routes/_app.hr'
 import { Route as AppHeatmapRouteImport } from './routes/_app.heatmap'
@@ -39,6 +40,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppTasksRoute = AppTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSalesRoute = AppSalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeavesRoute = AppLeavesRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/heatmap': typeof AppHeatmapRoute
   '/hr': typeof AppHrRoute
   '/leaves': typeof AppLeavesRoute
+  '/sales': typeof AppSalesRoute
   '/tasks': typeof AppTasksRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/heatmap': typeof AppHeatmapRoute
   '/hr': typeof AppHrRoute
   '/leaves': typeof AppLeavesRoute
+  '/sales': typeof AppSalesRoute
   '/tasks': typeof AppTasksRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/projects/new': typeof AppProjectsNewRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_app/heatmap': typeof AppHeatmapRoute
   '/_app/hr': typeof AppHrRoute
   '/_app/leaves': typeof AppLeavesRoute
+  '/_app/sales': typeof AppSalesRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
   '/_app/projects/new': typeof AppProjectsNewRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/hr'
     | '/leaves'
+    | '/sales'
     | '/tasks'
     | '/projects/$projectId'
     | '/projects/new'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/hr'
     | '/leaves'
+    | '/sales'
     | '/tasks'
     | '/projects/$projectId'
     | '/projects/new'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/_app/heatmap'
     | '/_app/hr'
     | '/_app/leaves'
+    | '/_app/sales'
     | '/_app/tasks'
     | '/_app/projects/$projectId'
     | '/_app/projects/new'
@@ -200,6 +212,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof AppTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sales': {
+      id: '/_app/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof AppSalesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/leaves': {
@@ -267,6 +286,7 @@ interface AppRouteChildren {
   AppHeatmapRoute: typeof AppHeatmapRoute
   AppHrRoute: typeof AppHrRoute
   AppLeavesRoute: typeof AppLeavesRoute
+  AppSalesRoute: typeof AppSalesRoute
   AppTasksRoute: typeof AppTasksRoute
   AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
   AppProjectsNewRoute: typeof AppProjectsNewRoute
@@ -279,6 +299,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHeatmapRoute: AppHeatmapRoute,
   AppHrRoute: AppHrRoute,
   AppLeavesRoute: AppLeavesRoute,
+  AppSalesRoute: AppSalesRoute,
   AppTasksRoute: AppTasksRoute,
   AppProjectsProjectIdRoute: AppProjectsProjectIdRoute,
   AppProjectsNewRoute: AppProjectsNewRoute,
