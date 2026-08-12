@@ -18,12 +18,17 @@ import { computeEmployeeLoad } from "@/lib/types";
 import { ProjectScopeAnalyzer } from "@/components/project/ProjectScopeAnalyzer";
 
 export const Route = createFileRoute("/_app/projects/new")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    client: typeof search.client === "string" ? search.client : undefined,
+    budget: search.budget != null && !Number.isNaN(Number(search.budget)) ? Number(search.budget) : undefined,
+  }),
   component: NewProjectWizard,
 });
 
 function NewProjectWizard() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { client: prefillClient, budget: prefillBudget } = Route.useSearch();
   const [step, setStep] = useState(1);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -39,8 +44,11 @@ function NewProjectWizard() {
 
   const [form, setForm] = useState({
     name: "", brief: "", deadline: "",
-    priority: "medium" as const, budget: "", client_name: "",
+    priority: "medium" as const,
+    budget: prefillBudget ? String(prefillBudget) : "",
+    client_name: prefillClient ?? "",
   });
+
 
   const addSkill = (raw: string) => {
     const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
