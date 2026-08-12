@@ -27,7 +27,7 @@ function HeatmapPage() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      supabase.from("employees").select("*").order("department"),
+      supabase.from("employees").select("*").eq("is_active", true).order("department"),
       supabase.from("tasks").select("*"),
       supabase.from("leaves").select("*"),
     ]).then(([eRes, tRes, lRes]) => {

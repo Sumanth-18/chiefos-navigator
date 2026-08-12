@@ -37,7 +37,7 @@ function DashboardPage() {
     async function fetchData() {
       const [pRes, eRes, tRes, lRes, aRes, xRes] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
-        supabase.from("employees").select("*"),
+        supabase.from("employees").select("*").eq("is_active", true),
         supabase.from("tasks").select("*"),
         supabase.from("leaves").select("*"),
         supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(500),

@@ -67,7 +67,7 @@ function NewProjectWizard() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      supabase.from("employees").select("*"),
+      supabase.from("employees").select("*").eq("is_active", true),
       supabase.from("tasks").select("*"),
       supabase.from("leaves").select("*"),
     ]).then(([eRes, tRes, lRes]) => {
