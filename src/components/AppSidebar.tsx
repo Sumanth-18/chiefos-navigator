@@ -9,6 +9,9 @@ import {
   LogOut,
   RefreshCw,
   Zap,
+  UserMinus,
+  Handshake,
+
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { seedDemoData } from '@/lib/seed.functions';
