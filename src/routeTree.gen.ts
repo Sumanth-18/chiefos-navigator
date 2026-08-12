@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTasksRouteImport } from './routes/_app.tasks'
 import { Route as AppLeavesRouteImport } from './routes/_app.leaves'
+import { Route as AppHrRouteImport } from './routes/_app.hr'
 import { Route as AppHeatmapRouteImport } from './routes/_app.heatmap'
 import { Route as AppEmployeesRouteImport } from './routes/_app.employees'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
@@ -43,6 +44,11 @@ const AppTasksRoute = AppTasksRouteImport.update({
 const AppLeavesRoute = AppLeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHrRoute = AppHrRouteImport.update({
+  id: '/hr',
+  path: '/hr',
   getParentRoute: () => AppRoute,
 } as any)
 const AppHeatmapRoute = AppHeatmapRouteImport.update({
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/employees': typeof AppEmployeesRoute
   '/heatmap': typeof AppHeatmapRoute
+  '/hr': typeof AppHrRoute
   '/leaves': typeof AppLeavesRoute
   '/tasks': typeof AppTasksRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/employees': typeof AppEmployeesRoute
   '/heatmap': typeof AppHeatmapRoute
+  '/hr': typeof AppHrRoute
   '/leaves': typeof AppLeavesRoute
   '/tasks': typeof AppTasksRoute
   '/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/employees': typeof AppEmployeesRoute
   '/_app/heatmap': typeof AppHeatmapRoute
+  '/_app/hr': typeof AppHrRoute
   '/_app/leaves': typeof AppLeavesRoute
   '/_app/tasks': typeof AppTasksRoute
   '/_app/projects/$projectId': typeof AppProjectsProjectIdRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/heatmap'
+    | '/hr'
     | '/leaves'
     | '/tasks'
     | '/projects/$projectId'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/employees'
     | '/heatmap'
+    | '/hr'
     | '/leaves'
     | '/tasks'
     | '/projects/$projectId'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/employees'
     | '/_app/heatmap'
+    | '/_app/hr'
     | '/_app/leaves'
     | '/_app/tasks'
     | '/_app/projects/$projectId'
@@ -195,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/leaves'
       fullPath: '/leaves'
       preLoaderRoute: typeof AppLeavesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/hr': {
+      id: '/_app/hr'
+      path: '/hr'
+      fullPath: '/hr'
+      preLoaderRoute: typeof AppHrRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/heatmap': {
@@ -246,6 +265,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppEmployeesRoute: typeof AppEmployeesRoute
   AppHeatmapRoute: typeof AppHeatmapRoute
+  AppHrRoute: typeof AppHrRoute
   AppLeavesRoute: typeof AppLeavesRoute
   AppTasksRoute: typeof AppTasksRoute
   AppProjectsProjectIdRoute: typeof AppProjectsProjectIdRoute
@@ -257,6 +277,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppEmployeesRoute: AppEmployeesRoute,
   AppHeatmapRoute: AppHeatmapRoute,
+  AppHrRoute: AppHrRoute,
   AppLeavesRoute: AppLeavesRoute,
   AppTasksRoute: AppTasksRoute,
   AppProjectsProjectIdRoute: AppProjectsProjectIdRoute,
@@ -274,12 +295,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
