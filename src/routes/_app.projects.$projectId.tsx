@@ -9,6 +9,8 @@ import { TaskDetailPanel } from "@/components/project/TaskDetailPanel";
 import { AITaskBreakdownModal } from "@/components/project/AITaskBreakdownModal";
 import { DeadlineCascadeDialog } from "@/components/project/DeadlineCascadeDialog";
 import { ProjectScopeAnalyzer, type ScopeApplyPayload } from "@/components/project/ProjectScopeAnalyzer";
+import { ProjectFinance } from "@/components/finance/ProjectFinance";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -330,6 +332,9 @@ function ProjectDetailPage() {
           />
         </section>
       </div>
+
+      {user && <ProjectFinance projectId={project.id} budget={project.budget} userId={user.id} />}
+
 
       {selectedTask && (
         <TaskDetailPanel

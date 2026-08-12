@@ -9,6 +9,9 @@ import {
   LogOut,
   RefreshCw,
   Zap,
+  UserMinus,
+  Handshake,
+
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { seedDemoData } from '@/lib/seed.functions';
@@ -17,12 +20,15 @@ import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/employees', label: 'Employees', icon: Users },
+  { to: '/hr', label: 'HR Ops', icon: UserMinus },
+  { to: '/sales', label: 'Sales', icon: Handshake },
+  { to: '/projects', label: 'Projects', icon: FolderKanban },
   { to: '/tasks', label: 'Tasks', icon: CheckSquare },
   { to: '/leaves', label: 'Leaves', icon: CalendarOff },
   { to: '/heatmap', label: 'Heatmap', icon: BarChart3 },
 ] as const;
+
 
 export function AppSidebar() {
   const location = useLocation();

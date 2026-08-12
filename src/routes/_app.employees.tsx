@@ -43,7 +43,7 @@ function EmployeesPage() {
   const fetchData = async () => {
     if (!user) return;
     const [eRes, tRes, lRes, pRes, mRes] = await Promise.all([
-      supabase.from("employees").select("*").order("name"),
+      supabase.from("employees").select("*").eq("is_active", true).order("name"),
       supabase.from("tasks").select("*"),
       supabase.from("leaves").select("*"),
       supabase.from("projects").select("*"),

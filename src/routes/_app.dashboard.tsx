@@ -4,11 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity } from "lucide-react";
+import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Project, Employee, Task, Leave, AuditLogEntry } from "@/lib/types";
 import { computeEmployeeLoad, computeProjectHealth } from "@/lib/types";
+import { formatINR, toneClass, varianceTone, type Expense } from "@/lib/finance";
 import { DepartmentBreakdown } from "@/components/dashboard/DepartmentBreakdown";
+
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -23,6 +25,8 @@ function DashboardPage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [events, setEvents] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
@@ -31,19 +35,22 @@ function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     async function fetchData() {
-      const [pRes, eRes, tRes, lRes, aRes] = await Promise.all([
+      const [pRes, eRes, tRes, lRes, aRes, xRes] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
-        supabase.from("employees").select("*"),
+        supabase.from("employees").select("*").eq("is_active", true),
         supabase.from("tasks").select("*"),
         supabase.from("leaves").select("*"),
         supabase.from("audit_log").select("*").order("created_at", { ascending: false }).limit(500),
+        supabase.from("expenses").select("*"),
       ]);
       setProjects((pRes.data as Project[]) || []);
       setEmployees((eRes.data as Employee[]) || []);
       setTasks((tRes.data as Task[]) || []);
       setLeaves((lRes.data as Leave[]) || []);
       setEvents((aRes.data as AuditLogEntry[]) || []);
+      setExpenses((xRes.data as unknown as Expense[]) || []);
       setLoading(false);
+
     }
     fetchData();
   }, [user]);
@@ -68,7 +75,13 @@ function DashboardPage() {
   const overloadedCount = employeesWithLoad.filter((e) => e.computed_load > 90).length;
   const onLeaveCount = leaves.filter((l) => l.status === "approved" && new Date(l.start_date) <= new Date() && new Date(l.end_date) >= new Date()).length;
 
+  const totalBudgeted = projects.filter((p) => p.status === "active").reduce((s, p) => s + Number(p.budget || 0), 0);
+  const totalSpent = expenses.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const overallVariancePct = totalBudgeted > 0 ? Math.round(((totalBudgeted - totalSpent) / totalBudgeted) * 100) : 0;
+  const financeTone = varianceTone(totalBudgeted, totalSpent);
+
   const kpis = [
+
     { label: "Active Projects", value: activeProjects, total: projects.length, icon: FolderKanban, color: "text-primary" },
     { label: "Team Members", value: employees.length, icon: Users, color: "text-info" },
     { label: "Tasks Done", value: completedTasks, total: tasks.length, icon: CheckSquare, color: "text-success" },
@@ -211,7 +224,29 @@ function DashboardPage() {
         </Card>
       </div>
 
+      <Card className="glass-card">
+        <CardHeader className="flex flex-row items-center gap-2 pb-2">
+          <Wallet className="h-4 w-4 text-primary" />
+          <CardTitle className="text-lg">Finance</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 sm:grid-cols-3">
+          <div>
+            <p className="text-sm text-muted-foreground">Total budgeted</p>
+            <p className="text-2xl font-bold tabular-nums">{formatINR(totalBudgeted)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Total spent</p>
+            <p className="text-2xl font-bold tabular-nums">{formatINR(totalSpent)}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Overall variance</p>
+            <p className={`text-2xl font-bold tabular-nums ${toneClass[financeTone]}`}>{overallVariancePct}%</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <DepartmentBreakdown employees={employees} tasks={tasks} leaves={leaves} events={events} />
+
     </div>
   );
 }
