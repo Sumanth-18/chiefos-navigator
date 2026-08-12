@@ -4,11 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity } from "lucide-react";
+import { FolderKanban, Users, CheckSquare, TrendingUp, AlertTriangle, Clock, Zap, Activity, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Project, Employee, Task, Leave, AuditLogEntry } from "@/lib/types";
 import { computeEmployeeLoad, computeProjectHealth } from "@/lib/types";
+import { formatINR, toneClass, varianceTone, type Expense } from "@/lib/finance";
 import { DepartmentBreakdown } from "@/components/dashboard/DepartmentBreakdown";
+
 
 export const Route = createFileRoute("/_app/dashboard")({
   component: DashboardPage,
@@ -23,6 +25,8 @@ function DashboardPage() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [events, setEvents] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/login" });
