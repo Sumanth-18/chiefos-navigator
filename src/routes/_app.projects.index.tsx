@@ -61,7 +61,7 @@ function ProjectsPage() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     const [pRes, tRes, mRes] = await Promise.all([
       supabase.from("projects").select("*").order("created_at", { ascending: false }),
@@ -72,9 +72,10 @@ function ProjectsPage() {
     setTasks((tRes.data as Task[]) || []);
     setMembers((mRes.data as ProjectMember[]) || []);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["projects", "tasks", "project_members", "expenses"], fetchData, !!user);
 
   const createProject = async (e: React.FormEvent) => {
     e.preventDefault();

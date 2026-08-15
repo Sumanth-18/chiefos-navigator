@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRealtime } from "@/hooks/useRealtime";
 import type { Project, Task, Employee, ProjectMember, Leave } from "@/lib/types";
 import { computeProjectHealth, computeEmployeeLoad } from "@/lib/types";
 import { KanbanBoard } from "@/components/project/KanbanBoard";

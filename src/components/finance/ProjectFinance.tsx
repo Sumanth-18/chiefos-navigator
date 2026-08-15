@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtime } from '@/hooks/useRealtime';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,8 @@ export function ProjectFinance({ projectId, budget, userId }: { projectId: strin
   useEffect(() => {
     load();
   }, [load]);
+
+  useRealtime(['expenses', 'projects'], load);
 
   const actual = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
   const budgeted = Number(budget || 0);
