@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,6 +77,9 @@ function NewProjectWizard() {
       setLeaves((lRes.data as Leave[]) || []);
     });
   }, [user]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["employees", "tasks", "leaves"], fetchData, !!user);
 
   const requestAISuggestion = async () => {
     if (!user) return;
