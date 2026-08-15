@@ -32,9 +32,9 @@ function DashboardPage() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
-    async function fetchData() {
+    {
       const [pRes, eRes, tRes, lRes, aRes, xRes] = await Promise.all([
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("employees").select("*").eq("is_active", true),
