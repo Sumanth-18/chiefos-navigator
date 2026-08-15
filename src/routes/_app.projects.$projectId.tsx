@@ -77,6 +77,7 @@ function ProjectDetailPage() {
   }, [user, projectId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["projects", "tasks", "employees", "project_members", "leaves", "expenses"], fetchData, !!user);
 
   const health = useMemo(() => project ? computeProjectHealth(project.id, tasks) : null, [project, tasks]);
   const overdueTasks = useMemo(

@@ -64,9 +64,9 @@ function NewProjectWizard() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
-    Promise.all([
+    await Promise.all([
       supabase.from("employees").select("*").eq("is_active", true),
       supabase.from("tasks").select("*"),
       supabase.from("leaves").select("*"),
