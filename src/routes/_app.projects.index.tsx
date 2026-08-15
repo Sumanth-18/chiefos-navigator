@@ -123,7 +123,7 @@ function ProjectsPage() {
           <p className="mt-1 text-muted-foreground">{projects.length} projects — health computed dynamically</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => navigate({ to: "/projects/new" })}><Zap className="mr-2 h-4 w-4" />AI Wizard</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/projects/new", search: { client: undefined, budget: undefined } })}><Zap className="mr-2 h-4 w-4" />AI Wizard</Button>
           <Button onClick={() => setShowCreate(true)}><Plus className="mr-2 h-4 w-4" />New Project</Button>
         </div>
       </div>
