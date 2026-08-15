@@ -17,7 +17,6 @@ export function useRealtime(tables: string[], onChange: () => void, enabled = tr
     const channel = supabase.channel(`realtime:${key}:${Math.random().toString(36).slice(2)}`);
     for (const table of list) {
       channel.on(
-        // @ts-expect-error - supabase-js overload for postgres_changes
         "postgres_changes",
         { event: "*", schema: "public", table },
         () => cb.current(),
