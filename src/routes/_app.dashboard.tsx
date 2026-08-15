@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,8 +53,11 @@ function DashboardPage() {
       setLoading(false);
 
     }
-    fetchData();
   }, [user]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["projects", "employees", "tasks", "leaves", "expenses", "attrition_events", "audit_log"], fetchData, !!user);
+
 
   if (authLoading || loading) {
     return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
