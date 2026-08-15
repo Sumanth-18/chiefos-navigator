@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +62,7 @@ function ProjectsPage() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     const [pRes, tRes, mRes] = await Promise.all([
       supabase.from("projects").select("*").order("created_at", { ascending: false }),
@@ -72,9 +73,10 @@ function ProjectsPage() {
     setTasks((tRes.data as Task[]) || []);
     setMembers((mRes.data as ProjectMember[]) || []);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["projects", "tasks", "project_members", "expenses"], fetchData, !!user);
 
   const createProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +125,7 @@ function ProjectsPage() {
           <p className="mt-1 text-muted-foreground">{projects.length} projects — health computed dynamically</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => navigate({ to: "/projects/new" })}><Zap className="mr-2 h-4 w-4" />AI Wizard</Button>
+          <Button variant="outline" onClick={() => navigate({ to: "/projects/new", search: { client: undefined, budget: undefined } })}><Zap className="mr-2 h-4 w-4" />AI Wizard</Button>
           <Button onClick={() => setShowCreate(true)}><Plus className="mr-2 h-4 w-4" />New Project</Button>
         </div>
       </div>

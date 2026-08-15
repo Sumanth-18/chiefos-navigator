@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,7 @@ function EmployeesPage() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     const [eRes, tRes, lRes, pRes, mRes] = await Promise.all([
       supabase.from("employees").select("*").eq("is_active", true).order("name"),
@@ -55,9 +56,10 @@ function EmployeesPage() {
     setProjects((pRes.data as Project[]) || []);
     setMembers((mRes.data as ProjectMember[]) || []);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { fetchData(); }, [user]);
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["employees", "tasks", "leaves", "projects", "project_members", "attrition_events"], fetchData, !!user);
 
   const createEmployee = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRealtime } from "@/hooks/useRealtime";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,9 +25,9 @@ function HeatmapPage() {
     if (!authLoading && !user) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
-    Promise.all([
+    await Promise.all([
       supabase.from("employees").select("*").eq("is_active", true).order("department"),
       supabase.from("tasks").select("*"),
       supabase.from("leaves").select("*"),
@@ -37,6 +38,9 @@ function HeatmapPage() {
       setLoading(false);
     });
   }, [user]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRealtime(["employees", "tasks", "leaves", "attrition_events"], fetchData, !!user);
 
   if (authLoading || loading) {
     return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
