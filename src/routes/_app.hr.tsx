@@ -73,19 +73,36 @@ function HROpsPage() {
   const attrition = avgHeadcount > 0 ? Math.round((recentExits.length / avgHeadcount) * 100) : 0;
   const attritionTone = attrition > 15 ? "red" : attrition >= 8 ? "amber" : "green";
 
-  // Skill gaps from active project required skills
+  // Skill gaps: DISTINCT required skills (de-duplicated case-insensitively across
+  // all active/planning projects) that have zero or one matching active employee.
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning");
-  const requiredSkills = Array.from(new Set(activeProjects.flatMap((p) => p.required_skills || [])));
-  const gaps = requiredSkills
-    .map((skill) => {
-      const holders = activeEmployees.filter((e) => (e.skills || []).some((s) => s.toLowerCase() === skill.toLowerCase()));
+  const skillByKey = new Map<string, string>();
+  activeProjects.forEach((p) =>
+    (p.required_skills || []).forEach((raw) => {
+      const skill = (raw ?? "").trim();
+      if (!skill) return;
+      const key = skill.toLowerCase();
+      if (!skillByKey.has(key)) skillByKey.set(key, skill);
+    })
+  );
+  const gaps = Array.from(skillByKey.entries())
+    .map(([key, skill]) => {
+      const holders = activeEmployees.filter((e) => (e.skills || []).some((s) => (s ?? "").trim().toLowerCase() === key));
       return {
         skill,
         count: holders.length,
-        projects: activeProjects.filter((p) => (p.required_skills || []).includes(skill)).map((p) => p.name),
+        projects: Array.from(
+          new Set(
+            activeProjects
+              .filter((p) => (p.required_skills || []).some((s) => (s ?? "").trim().toLowerCase() === key))
+              .map((p) => p.name)
+          )
+        ),
       };
     })
-    .filter((g) => g.count <= 1);
+    .filter((g) => g.count <= 1)
+    .sort((a, b) => a.count - b.count || a.skill.localeCompare(b.skill));
+
 
   // Headcount trend (last 12 months)
   const months: { label: string; headcount: number }[] = [];
