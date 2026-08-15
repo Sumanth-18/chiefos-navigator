@@ -78,7 +78,9 @@ function SalesPage() {
 
   const openDeals = deals.filter((d) => d.stage !== "Won" && d.stage !== "Lost");
   const totalPipeline = openDeals.reduce((s, d) => s + Number(d.value || 0), 0);
-  const weighted = deals.reduce((s, d) => s + Number(d.value || 0) * (STAGE_PROBABILITY[d.stage] ?? 0), 0);
+  // Weighted forecast covers OPEN deals only — Won revenue is reported separately
+  // so it is not counted twice across the pipeline cards.
+  const weighted = openDeals.reduce((s, d) => s + Number(d.value || 0) * (STAGE_PROBABILITY[d.stage] ?? 0), 0);
   const now = new Date();
   const wonThisMonth = deals
     .filter((d) => {
